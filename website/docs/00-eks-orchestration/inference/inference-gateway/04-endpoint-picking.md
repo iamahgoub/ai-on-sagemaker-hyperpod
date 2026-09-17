@@ -44,7 +44,7 @@ kubectl scale deploy vllm-qwen-small -n "${MODEL_NS}" --replicas=2
 kubectl rollout status deploy/vllm-qwen-small -n "${MODEL_NS}" --timeout=600s
 ```
 
-Confirm both replicas are serving, and capture their IPs:
+Confirm both replicas are serving:
 
 ```bash
 kubectl get pods -n "${MODEL_NS}" -l app=vllm-qwen-small \
@@ -68,9 +68,10 @@ This example needs a third GPU, since both models are running. If your node grou
 vLLM exposes both a request counter and prefix-cache statistics per pod. These are easier to read than parsing access logs:
 
 ```bash
-for ip in 10.1.39.66 10.1.71.86; do
+for ip in $(kubectl get pods -n "${MODEL_NS}" -l app=vllm-qwen-small \
+  -o jsonpath='{range .items[*]}{.status.podIP}{" "}{end}'); do
   echo "--- ${ip}"
-  kubectl run snap-$RANDOM --rm -i --restart=Never \
+  kubectl run "counters-${ip//./-}" --rm -i --restart=Never \
     --image=curlimages/curl:8.10.1 -n "${MODEL_NS}" -- \
     curl -sS -m 15 "http://${ip}:8000/metrics" \
     | grep -E '^vllm:(request_success_total|gpu_prefix_cache_hits_total|gpu_prefix_cache_queries_total)'
@@ -116,7 +117,28 @@ Every request went to a single pod, and that pod served 92% of its prefix blocks
 
 ## 4. Compare against unique prefixes
 
-Re-run the batch with a unique prefix per request, so there is no shared prefix to reuse. Replace the preamble construction with something that varies per request, for example seeding it with `$n`.
+Re-run the batch with a unique prefix per request, so there is no shared prefix to reuse. The only change from the previous batch is that the preamble is rebuilt **inside** the request loop and seeded with `$n`, so the leading tokens differ every time:
+
+```bash
+kubectl run batch-unique --rm -i --restart=Never \
+  --image=curlimages/curl:8.10.1 -n "${MODEL_NS}" -- sh -c '
+GW="'"${GW}"'"
+n=1; while [ $n -le 12 ]; do
+  # rebuilt per request, so no two prompts share leading tokens
+  P="Request $n context:"
+  j=1; while [ $j -le 40 ]; do
+    P="$P Unique-$n-segment-$j padding text for request $n segment $j with no shared leading tokens."
+    j=$((j+1))
+  done
+  BODY=$(printf "{\"model\":\"Qwen/Qwen2.5-0.5B-Instruct\",\"prompt\":\"%s Question %s: name one factor.\",\"max_tokens\":4,\"temperature\":0}" "$P" "$n")
+  printf "%s" "$BODY" | curl -sS -o /dev/null -m 60 -w "%{http_code} " \
+    -X POST "$GW/v1/completions" -H "Content-Type: application/json" --data-binary @-
+  n=$((n+1))
+done
+echo'
+```
+
+Read the counters again and compute the deltas as in step 2.
 
 Expected result:
 
@@ -155,7 +177,15 @@ EOF
 kubectl apply -f gateway-no-prefix.yaml
 ```
 
-Wait for `Ready=True`, re-resolve `GW`, and send the same shared-prefix batch again.
+Wait for the Gateway to become ready:
+
+```bash
+kubectl get inferencegatewayconfig "${GATEWAY_NAME}" -n "${MODEL_NS}" \
+  -o jsonpath='{range .status.conditions[*]}{.type}={.status}{"\n"}{end}'
+```
+
+
+Then, send the same shared-prefix batch again (step 3).
 
 Expected result:
 
