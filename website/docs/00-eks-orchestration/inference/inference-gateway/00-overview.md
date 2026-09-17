@@ -68,11 +68,8 @@ Each vLLM pod in these examples requests one whole GPU. The examples were valida
 The gateway component is **off by default**. Confirm the add-on is active and check its configuration:
 
 ```bash
-export CLUSTER={your-eks-cluster-name}
-export AWS_REGION={your-region}
-
 aws eks describe-addon \
-  --cluster-name "${CLUSTER}" --region "${AWS_REGION}" \
+  --cluster-name "${EKS_CLUSTER_NAME}" --region "${AWS_REGION}" \
   --addon-name amazon-sagemaker-hyperpod-inference \
   --query 'addon.{version:addonVersion,status:status,health:health.issues}'
 ```
@@ -94,6 +91,13 @@ kubectl get crd inferencegatewayconfigs.inference.sagemaker.aws.amazon.com
 kubectl get pods -n hyperpod-inference-system | grep inference-gateway-controller
 ```
 
+Expected output:
+```bash
+NAME                                                         CREATED AT
+inferencegatewayconfigs.inference.sagemaker.aws.amazon.com   2026-08-10T12:31:57Z
+inference-gateway-controller-6bfc749674-dkkhs            1/1     Running   0          19d
+```
+
 :::warning
 If the `inferencegatewayconfigs` CRD is missing, the add-on was installed without the gateway component. Update the add-on configuration with `inferenceGateway.enabled: true` before continuing. The `inferenceOperator` component defaults to enabled, but `inferenceGateway` does not.
 :::
@@ -104,10 +108,10 @@ Every page in this section uses these variables:
 
 ```bash
 export SYSTEM_NS=hyperpod-inference-system
-export MODEL_NS={your-model-namespace}
+export MODEL_NS=inference-gateway-lab
 export GATEWAY_NAME=inference-gateway-demo
 
-kubectl create namespace "${MODEL_NS}" --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace "${MODEL_NS}"
 ```
 
 ## What you will build
