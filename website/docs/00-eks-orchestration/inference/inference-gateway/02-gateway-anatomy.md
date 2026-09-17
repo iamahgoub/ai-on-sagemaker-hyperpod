@@ -3,7 +3,7 @@ title: Inspect the Gateway
 sidebar_position: 3
 sidebar_label: Gateway Anatomy
 ---
-# Inspect the Gateway
+# Inspect the gateway
 
 Applying one `InferenceGatewayConfig` caused the controller to create a number of resources across two namespaces. This page maps each of them back to the architecture, so that later troubleshooting is not guesswork.
 
@@ -18,7 +18,7 @@ From a single custom resource, the `inference-gateway-controller` generated:
 
 ## 1. Data plane pods
 
-### 1.1 System Namespace
+### 1.1 System namespace
 
 ```bash
 kubectl get pods -n "${SYSTEM_NS}"
@@ -56,7 +56,7 @@ vllm-qwen-68c5644b78-r8cnl   3/3     Running   0          12m
 
 `qwen-epp` is the endpoint picker for the scheduler named `qwen`. The naming is always `<scheduler-name>-epp`, so a config with three schedulers produces three of these.
 
-## 2. Generated Gateway API Resources
+## 2. Generated Gateway API resources
 
 ### 2.1 InferencePool and HTTPRoute
 
@@ -92,7 +92,7 @@ NAME                     CLASS               ADDRESS                            
 inference-gateway-demo   inference-gateway   k8s-hyperpod-envoyhyp-8551468ca7-...elb.us-west-2.amazonaws.com                  True         5m
 ```
 
-## 3. Which Endpoint-Picker implementation is running
+## 3. Which endpoint-picker implementation is running
 
 The `scheduler` field in your config chooses between two implementations. The container image is the reliable way to tell which one is active:
 
@@ -106,7 +106,7 @@ kubectl get pods -n "${MODEL_NS}" -l app=qwen-epp \
 | `llm-d` | `llm-d-epp` |
 | `epp` | `inference-gateway-epp` |
 
-## 4. How the Endpoint Picker is wired
+## 4. How the endpoint picker is wired
 
 Inspect the endpoint picker's arguments to see how it is bound to its pool:
 
@@ -123,7 +123,7 @@ Expected output:
 
 The endpoint picker is an Envoy external processing (`ext_proc`) service. Envoy calls it per request, and it replies with the endpoint to use.
 
-## Request Path
+## Request path
 
 Putting it together, a request flows:
 

@@ -7,7 +7,7 @@ sidebar_label: Cleanup and Troubleshooting
 
 ## 1. Cleanup
 
-### 1.1 Delete the Gateway Config
+### 1.1 Delete the gateway config
 
 Deleting the `InferenceGatewayConfig` garbage collects the whole data plane it created — the `Gateway`, the Envoy proxy and service, the BBR deployment, the endpoint pickers, and the generated `InferencePool` and `HTTPRoute` resources:
 
@@ -78,7 +78,7 @@ kubectl get inferencegatewayconfig "${GATEWAY_NAME}" -n "${MODEL_NS}" \
 
 The request reached a backend, which then rejected the model name. With a single scheduler and BBR disabled the gateway does no model matching and forwards everything to its one pool, so a bad model name surfaces at the backend rather than at the gateway.
 
-### 2.3 Gateway ready but requests Fail
+### 2.3 Gateway ready but requests fail
 
 Check that the scheduler's `modelSelector` actually matches running pods:
 
@@ -105,7 +105,7 @@ readinessProbe:
 
 Models deployed through the inference operator get an equivalent probe automatically.
 
-### 2.5 Cannot resolve the Gateway hostname
+### 2.5 Cannot resolve the gateway hostname
 
 ```
 curl: (6) Could not resolve host: envoy-...svc.cluster.local

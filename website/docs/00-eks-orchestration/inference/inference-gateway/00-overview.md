@@ -39,7 +39,7 @@ The gateway is delivered by the `amazon-sagemaker-hyperpod-inference` EKS add-on
 The Envoy proxy and the BBR pod run in `hyperpod-inference-system`, but the endpoint pickers run in your **model namespace**, next to the models they route to. This trips people up when looking for pods.
 :::
 
-## Key concept: Schedulers
+## Key concept: schedulers
 
 A **scheduler** is one entry in `spec.schedulers[]` of an `InferenceGatewayConfig`. It is a named routing target group that binds four things together:
 

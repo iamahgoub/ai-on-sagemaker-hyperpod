@@ -3,7 +3,7 @@ title: Multi-Model Routing with Body-Based Routing
 sidebar_position: 4
 sidebar_label: Multi-Model Routing
 ---
-# Multi-model routing with Body-Based Routing
+# Multi-model routing with body-based routing
 
 This page adds a second model and turns on body-based routing (BBR), so that a single endpoint serves both models and routes each request by the `model` field in its body. You will then prove from logs that routing was correct.
 
@@ -21,7 +21,7 @@ The second model is deployed with a plain `Deployment` rather than the operator 
 
 ## 1. Deploy the second model
 
-### 1.1 Create a Plain Deployment
+### 1.1 Create a plain Deployment
 
 ```bash
 cat <<EOF > vllm-qwen-small.yaml
@@ -75,7 +75,7 @@ kubectl rollout status deploy/vllm-qwen-small -n "${MODEL_NS}" --timeout=600s
 Include the `readinessProbe`. Without one, `kubectl rollout status` reports success while vLLM is still loading the model and the port is still refusing connections, and your first request fails for no apparent reason. The inference operator adds this probe automatically; a hand-written `Deployment` does not.
 :::
 
-### 1.2 Confirm Both Backends Are Serving
+### 1.2 Confirm both backends are serving
 
 ```bash
 kubectl get pods -n "${MODEL_NS}" -l 'app in (vllm-qwen,vllm-qwen-small)'
@@ -91,7 +91,7 @@ vllm-qwen-small-85dbd7577f-fj8sl   1/1     Running   0          3m
 
 One is `3/3` (operator, with sidecars) and one is `1/1` (plain `Deployment`). The gateway treats them identically.
 
-## 2. Enable Body-Based Routing
+## 2. Enable body-based routing
 
 ### 2.1 Delete the existing config
 
@@ -202,7 +202,7 @@ Both return HTTP 200, and each response echoes the model that served it:
 
 Two independent sources confirm where a request went.
 
-### 4.1 Endpoint Picker logs (Authoritative)
+### 4.1 Endpoint picker logs (authoritative)
 
 The endpoint picker logs the request id alongside the model it resolved. Match the `cmpl-` id from each response:
 
@@ -229,7 +229,7 @@ Each request id appears in exactly one endpoint picker's log, with the matching 
 `--since=15m` is a lookback window over the log, not a filter on your request. If you paused between steps and the requests are now older than that, `grep` matches nothing and the loop prints just its two `--- ` headers, which reads like routing failed. Widen the window to `--since=1h`, or drop the flag entirely to search the whole log, before concluding anything is wrong.
 :::
 
-### 4.2 Backend Access logs (Corroborating)
+### 4.2 Backend access logs (corroborating)
 
 The vLLM pods also log the request:
 

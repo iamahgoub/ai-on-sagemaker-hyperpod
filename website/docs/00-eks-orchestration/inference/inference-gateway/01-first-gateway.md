@@ -106,9 +106,9 @@ Expected output:
 vllm-qwen-68c5644b78-r8cnl   3/3   Running   0   2m   app=vllm-qwen,deploying-service=hyperpod-inference,pod-template-hash=68c5644b78
 ```
 
-## 2. Create the Gateway
+## 2. Create the gateway
 
-### 2.1 Define a Single-Scheduler Config
+### 2.1 Define a single-scheduler config
 
 ```bash
 cat <<EOF > gateway-single.yaml
@@ -135,7 +135,7 @@ kubectl apply -f gateway-single.yaml
 
 The `scheduler` field selects the endpoint-picker implementation, either `llm-d` or `epp`. BBR stays disabled here because there is only one scheduler.
 
-### 2.2 Wait for the Gateway to become ready
+### 2.2 Wait for the gateway to become ready
 
 ```bash
 kubectl get inferencegatewayconfig "${GATEWAY_NAME}" -n "${MODEL_NS}" \
@@ -168,7 +168,7 @@ AdmissionBlocked=False
 
 ## 3. Send your first request
 
-### 3.1 Resolve the In-Cluster Gateway URL
+### 3.1 Resolve the in-cluster gateway URL
 
 The controller creates an Envoy service whose name includes a generated suffix, so look it up by label rather than hardcoding it:
 
@@ -187,7 +187,7 @@ Expected output:
 http://envoy-hyperpod-inference-system-inference-gateway-demo-de027949.hyperpod-inference-system.svc.cluster.local
 ```
 
-### 3.2 Invoke the Model
+### 3.2 Invoke the model
 
 Send the request from a pod inside the cluster:
 
