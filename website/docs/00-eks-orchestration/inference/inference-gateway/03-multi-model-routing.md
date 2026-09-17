@@ -225,6 +225,10 @@ Expected output:
 
 Each request id appears in exactly one endpoint picker's log, with the matching model name. That is the routing proof: no cross-contamination between pools.
 
+:::tip
+`--since=15m` is a lookback window over the log, not a filter on your request. If you paused between steps and the requests are now older than that, `grep` matches nothing and the loop prints just its two `--- ` headers, which reads like routing failed. Widen the window to `--since=1h`, or drop the flag entirely to search the whole log, before concluding anything is wrong.
+:::
+
 ### 4.2 Backend Access logs (Corroborating)
 
 The vLLM pods also log the request:
@@ -262,6 +266,11 @@ HTTP 404
 
 The gateway rejects it before any backend is involved — no endpoint picker logs it and no vLLM pod sees it.
 
+:::info
+This gateway-level `404` depends on BBR being enabled. BBR is what matches the body's `model` value against each scheduler's `modelName`, so it is also what can find no match and reject the request.
+
+With a single scheduler and BBR disabled, as on [Deploy your first gateway](./01-first-gateway.md), no model matching happens at all. The gateway forwards every request to its one pool, and a bad model name surfaces at the backend instead as a vLLM `NotFoundError`. See [Troubleshooting §2.2](./05-cleanup-and-troubleshooting.md#22-requests-return-404) for both variants.
+:::
 
 ## Validation
 

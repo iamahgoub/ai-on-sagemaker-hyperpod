@@ -133,6 +133,7 @@ kubectl get inferencegatewayconfig "${GATEWAY_NAME}" -n "${MODEL_NS}" \
 kubectl logs -n "${SYSTEM_NS}" deploy/inference-gateway-controller --tail=200
 
 # Routing evidence from an endpoint picker
+# --since is a lookback window; widen it if the request was issued a while ago
 kubectl logs -n "${MODEL_NS}" -l app=qwen-epp --tail=-1 --since=15m \
   | grep -oE '"x-request-id":"[a-f0-9-]+","modelName":"[^"]+"'
 
