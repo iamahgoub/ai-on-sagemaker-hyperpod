@@ -113,7 +113,7 @@ Now re-read the counters from step 2 and compute the deltas.
 
 Expected result:
 
-Every request went to a single pod, and that pod served 92% of its prefix blocks from cache.
+Every request went to a single pod, and that pod served a high prefix-cache hit rate (~92% in our run; run-dependent)
 
 ## 4. Compare against unique prefixes
 
